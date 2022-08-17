@@ -4,8 +4,13 @@ import { RootState } from "../store";
 
 export type field = {
   type?: string;
-  value?: string;
+  fieldTitle?:string;
   required?: boolean;
+  options?:[
+    {title:string}
+  ];
+  dragId:string
+  
 }
 
 export type form = {

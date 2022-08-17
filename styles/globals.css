@@ -4,6 +4,6 @@
 
 @layer base{
   body{
-      @apply bg-[#081229] text-gray-300 p-0 m-0 scroll-smooth
+      @apply bg-[#081229] text-gray-300 p-0 m-0 scroll-smooth overflow-x-hidden box-border
   }
 }

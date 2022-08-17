@@ -9,14 +9,21 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.0.5",
+    "@dnd-kit/sortable": "^7.0.1",
     "@emotion/react": "^11.10.0",
     "@emotion/styled": "^11.10.0",
     "@mui/material": "^5.10.0",
     "@reduxjs/toolkit": "^1.8.4",
+    "@tailwindcss/forms": "^0.5.2",
     "next": "12.2.5",
     "react": "18.2.0",
+    "react-beautiful-dnd": "^13.1.0",
+    "react-beautiful-dnd-next": "^11.0.5",
     "react-dom": "18.2.0",
+    "react-icons": "^4.4.0",
     "react-redux": "^8.0.2",
+    "react-toastify": "^9.0.8",
     "uuidv4": "^6.2.13"
   },
   "devDependencies": {
