@@ -1,6 +1,6 @@
 # Dynamic Form Builder
 
-Easy and simple tool to create forms
+Easy and simple tool to create forms with drag and drop
 
 ## Demo
 
