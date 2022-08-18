@@ -5,9 +5,6 @@ import Modal from "@mui/material/Modal";
 import Fade from "@mui/material/Fade";
 import { Grid } from "@mui/material";
 import Typography from "@mui/material/Typography";
-import { useDispatch, useSelector } from "react-redux";
-import { selectForms, test } from "../../slices/formsSlice";
-import { useRouter } from "next/router";
 import { AiFillDelete } from "react-icons/ai";
 import { toast } from "react-toastify";
 
@@ -16,13 +13,12 @@ interface initialdata {
   fieldTitle?: string;
   required?: boolean;
   options?: [{ title: string }];
-  dragId:string;
+  dragId: string;
 }
 
 const style = {
   position: "absolute",
   right: 0,
-
   width: "450px",
   height: "100%",
   bgcolor: "#241b43",
@@ -43,6 +39,7 @@ type Props = {
   setmodalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   index: number;
   formIndex: number;
+  valuesToUpdate: any;
 };
 
 export default function EditFieldModal({
@@ -50,11 +47,8 @@ export default function EditFieldModal({
   setmodalOpen,
   index,
   formIndex,
+  valuesToUpdate,
 }: Props) {
-  const values = useSelector(selectForms);
-  const router = useRouter();
-  const dispatch = useDispatch();
-  const [formName, setformName] = useState("");
   const [addOptionValue, setaddOptionValue] = useState("");
   const [toastMsg, settoastMsg] = useState("");
 
@@ -63,69 +57,63 @@ export default function EditFieldModal({
     fieldTitle: "",
     required: false,
     options: [{ title: "init" }],
-    dragId:""
+    dragId: "",
   };
   const [fieldValues, setfieldValues] = useState<initialdata>(init);
 
-  let valuesToUpdate = JSON.parse(JSON.stringify(values));
   const handleClose = () => setmodalOpen(false);
-useEffect(()=>{
-  toastMsg && toastMsg.length!==0 && dispToast(toastMsg)
-},[toastMsg])
-
-
-const dispToast = (errorMsg:string)=>{
-  let id ="toast1"
-  toast.error(errorMsg, {
-    position: "top-right",
-    autoClose: 5000,
-    hideProgressBar: false,
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
-    theme:"dark",
-    toastId:id,
-    progress: undefined,
-    });
-    settoastMsg("")
-}
   useEffect(() => {
-    if (values[formIndex].fields.length !== 0) {
-      init = {
-        type: values[formIndex].fields[index]?.type,
-        fieldTitle: values[formIndex].fields[index]?.fieldTitle,
-        required: values[formIndex].fields[index]?.required,
-        options: values[formIndex].fields[index]?.options,
-        dragId:values[formIndex].fields[index]?.dragId
-      };
+    toastMsg && toastMsg.length !== 0 && dispToast(toastMsg);
+  }, [toastMsg]);
 
-      if (values[formIndex].fields[index]?.type == "input") {
-        delete init.options;
-      }
-    }
-    setfieldValues(init);
-    console.log(init);
-  }, [values, index]);
-  const handleFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setfieldValues({ ...fieldValues, [name]: value });
-  };
-
-  const handleSaveChanges = () => {
-    valuesToUpdate[formIndex].fields[index] = fieldValues;
-    dispatch(test(valuesToUpdate));
-    toast.success('Changes Saved', {
+  const dispToast = (errorMsg: string) => {
+    let id = "toast1";
+    toast.error(errorMsg, {
       position: "top-right",
       autoClose: 5000,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
-      draggable: false,
+      draggable: true,
+      theme: "dark",
+      toastId: id,
       progress: undefined,
-      theme:"dark"
-      });
-      setmodalOpen(false)
-     
+    });
+    settoastMsg("");
+  };
+  useEffect(() => {
+    if (valuesToUpdate[formIndex].fields.length !== 0) {
+      init = {
+        type: valuesToUpdate[formIndex].fields[index]?.type,
+        fieldTitle: valuesToUpdate[formIndex].fields[index]?.fieldTitle,
+        required: valuesToUpdate[formIndex].fields[index]?.required,
+        options: valuesToUpdate[formIndex].fields[index]?.options,
+        dragId: valuesToUpdate[formIndex].fields[index]?.dragId,
+      };
+
+      if (valuesToUpdate[formIndex].fields[index]?.type == "input") {
+        delete init.options;
+      }
+    }
+    setfieldValues(init);
+  }, [valuesToUpdate, modalOpen]);
+  const handleFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setfieldValues({ ...fieldValues, [name]: value });
+  };
+  const handleOptionChanges = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    i: number
+  ) => {
+    const { value } = e.target;
+    let obj = JSON.parse(JSON.stringify(fieldValues.options));
+    obj[i].title = value;
+    setfieldValues({ ...fieldValues, ["options"]: obj });
+  };
+
+  const handleSaveChanges = () => {
+    valuesToUpdate[formIndex].fields[index] = fieldValues;
+    setmodalOpen(false);
   };
   const handelChangeFieldRequired = (
     e: React.ChangeEvent<HTMLSelectElement>
@@ -143,21 +131,20 @@ const dispToast = (errorMsg:string)=>{
     setaddOptionValue(value);
   };
   const handleAddOptions = () => {
-    if(addOptionValue.length == 0){
-      settoastMsg("Enter Option")
-      return
-        
+    if (addOptionValue.length == 0) {
+      settoastMsg("Enter Option");
+      return;
     }
-    let obj =  JSON.parse(JSON.stringify(fieldValues.options));
-    obj.push({ title: addOptionValue })
-    setfieldValues({ ...fieldValues, ["options"]: obj })
-    setaddOptionValue("")
+    let obj = JSON.parse(JSON.stringify(fieldValues.options));
+    obj.push({ title: addOptionValue });
+    setfieldValues({ ...fieldValues, ["options"]: obj });
+    setaddOptionValue("");
   };
-  const handleDeleteOption = (i:number)=>{
-    let obj =  JSON.parse(JSON.stringify(fieldValues.options));
-    obj.splice(i,1)
-    setfieldValues({ ...fieldValues, ["options"]: obj })
-  }
+  const handleDeleteOption = (i: number) => {
+    let obj = JSON.parse(JSON.stringify(fieldValues.options));
+    obj.splice(i, 1);
+    setfieldValues({ ...fieldValues, ["options"]: obj });
+  };
   return (
     <div>
       <Modal
@@ -174,7 +161,7 @@ const dispToast = (errorMsg:string)=>{
       >
         <Fade in={modalOpen}>
           <Box sx={style}>
-            <Grid container >
+            <Grid container>
               <Grid item xs={12}>
                 <Typography
                   variant="h5"
@@ -254,16 +241,21 @@ const dispToast = (errorMsg:string)=>{
                 </Typography>
                 <div className=" flex flex-col ">
                   {fieldValues &&
-                    fieldValues.options?.map((o,i) => (
+                    fieldValues.options?.map((o, i) => (
                       <div className="flex items-center justify-center space-x-5 w-full ">
                         <input
-                          name="fieldTitle"
+                          name="options"
                           type="text"
                           className="bg-inputbg border outline-none  mb-2  text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-fit p-2.5  border-inputborder placeholder-gray-400 text-white "
                           value={o.title}
-                          onChange={(e) => handleFieldChange(e)}
+                          onChange={(e) => handleOptionChanges(e, i)}
                         />
-                        <AiFillDelete size={"1.27em"} className="cursor-pointer" color="#98172B" onClick={()=>handleDeleteOption(i)} />
+                        <AiFillDelete
+                          size={"1.27em"}
+                          className="cursor-pointer"
+                          color="#98172B"
+                          onClick={() => handleDeleteOption(i)}
+                        />
                       </div>
                     ))}
                   <div className="flex flex-col">
@@ -271,37 +263,40 @@ const dispToast = (errorMsg:string)=>{
                       name="addoption"
                       type="text"
                       value={addOptionValue}
-                      onChange={(e)=>handleAddOptionsInputChange(e)}
+                      onChange={(e) => handleAddOptionsInputChange(e)}
                       className="bg-inputbg border outline-none  mb-2  text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-44 p-2.5  border-inputborder placeholder-gray-400 text-white "
                     />
                     <button
                       style={{ backgroundColor: "#4d416d" }}
                       className="bg-btnbg2 p-3 rounded "
-                      onClick={()=>handleAddOptions()}
+                      onClick={() => handleAddOptions()}
                     >
                       Add Option
                     </button>
                   </div>
                 </div>
-       
               </Grid>
             )}
 
-<Grid
-                item
-                xs={12}
-                sx={{
-                  marginTop: "6rem",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  widht: "100%",
-                }}
+            <Grid
+              item
+              xs={12}
+              sx={{
+                marginTop: "6rem",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                widht: "100%",
+              }}
+            >
+              <button
+                style={{ backgroundColor: "#4d416d", width: "250px" }}
+                className="bg-btnbg2 p-3 rounded font-semibold capitalize"
+                onClick={() => handleSaveChanges()}
               >
-                      <button      style={{ backgroundColor: "#4d416d",width:"250px" }}
-                      className="bg-btnbg2 p-3 rounded font-semibold capitalize" onClick={() => handleSaveChanges()}>save changes</button>
-
-                      </Grid>
+                save changes
+              </button>
+            </Grid>
           </Box>
         </Fade>
       </Modal>

@@ -4,14 +4,11 @@ import { RootState } from "../store";
 
 export type field = {
   type?: string;
-  fieldTitle?:string;
+  fieldTitle?: string;
   required?: boolean;
-  options?:[
-    {title:string}
-  ];
-  dragId:string
-  
-}
+  options?: [{ title: string }];
+  dragId: string;
+};
 
 export type form = {
   id: string;
@@ -19,10 +16,7 @@ export type form = {
   fields: field[];
 };
 
-let initialState: form[] = [
-
-]
-
+let initialState: form[] = [];
 
 if (typeof window !== "undefined") {
   if (localStorage.getItem("forms")) {
@@ -33,18 +27,18 @@ if (typeof window !== "undefined") {
 
 const formsSlice = createSlice({
   name: "forms",
-  initialState:initialState,
+  initialState: initialState,
   reducers: {
-    updateForms: (state, action: PayloadAction<form>) => {
+    createForm: (state, action: PayloadAction<form>) => {
       state.push(action.payload);
     },
-    test: (state, action) => {
-      return action.payload 
+    updateForm: (state, action) => {
+      return action.payload;
     },
   },
 });
 
 // Selector
 export const selectForms = (state: RootState) => state.forms;
-export const { updateForms,test } = formsSlice.actions;
+export const { createForm, updateForm } = formsSlice.actions;
 export default formsSlice.reducer;

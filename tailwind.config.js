@@ -13,7 +13,9 @@ module.exports = {
         inputborder: "#243048",
         formbg: "#0e2049",
         btnbg2: "#122b61",
-        btnbg3: "#6cda39",
+        btnbg3: "#d4dff7",
+        btnbg4: "#788e1a",
+        btnbg5: "#0a4cdb",
       },
       boxShadow: {
         inputboxshadow: "0 0 0 2px #0293e2",

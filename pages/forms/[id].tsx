@@ -1,30 +1,40 @@
-import { useDispatch, useSelector } from "react-redux";
-import { field, form, selectForms, test } from "../../slices/formsSlice";
 import React, { useEffect, useState } from "react";
-import { AiFillDelete, AiFillEdit } from "react-icons/ai";
+import { useDispatch, useSelector } from "react-redux";
+import { field, selectForms, updateForm } from "../../slices/formsSlice";
 import { useRouter } from "next/router";
 import { uuid } from "uuidv4";
 import EditFieldModal from "../../views/Modals/EditFieldModal";
-import { MdPowerInput } from "react-icons/md";
-import { IoMdCheckbox, IoMdRadioButtonOn } from "react-icons/io";
-import { BsFillMenuAppFill } from "react-icons/bs";
-
-import { AiFillHome } from "react-icons/ai";
 import {
-  useDraggable,
   DndContext,
   useSensor,
-  PointerSensor,
   closestCenter,
   MouseSensor,
 } from "@dnd-kit/core";
-import { Droppable } from "../../components/Droppable";
-import { Draggable } from "../../components/Draggable";
 import {
   arrayMove,
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
+import { toast } from "react-toastify";
+
+
+// Import Fields
+
+import Selectinput  from "../../components/Fields/Selectinput";
+import CheckboxField from "../../components/Fields/CheckboxField";
+import InputField from "../../components/Fields/InputField";
+import Radiobutton from "../../components/Fields/Radiobutton";
+
+
+// Import Icons
+import { AiFillHome } from "react-icons/ai";
+import { MdPowerInput } from "react-icons/md";
+import { IoMdCheckbox, IoMdRadioButtonOn } from "react-icons/io";
+import { BsFillMenuAppFill } from "react-icons/bs";
+
+
+
+
 const FormPage = (context: any) => {
   const [domLoaded, setDomLoaded] = useState(false);
 
@@ -35,87 +45,84 @@ const FormPage = (context: any) => {
   const router = useRouter();
   const { id } = router.query;
   const values = useSelector(selectForms);
-  let valuesToUpdate = JSON.parse(JSON.stringify(values));
+  let getValues = JSON.parse(JSON.stringify(values));
   const [formIndex, setformIndex] = useState<number>(0);
-  const [testData, settestData] = useState(values);
-  const [formFound, setformFound] = useState(false);
+  const [valuesToUpdate, setvaluesToUpdate] = useState(getValues);
   const [modalOpen, setmodalOpen] = useState(false);
   const [indexFieldToEdit, setindexFieldToEdit] = useState<number>(0);
   const sensors = [useSensor(MouseSensor)];
   const dispatch = useDispatch();
 
   useEffect(() => {
-    settestData(values);
-    let find;
+
     values.map((v, i) => {
       if (v.id == id) {
         setformIndex(i);
-        find = true;
         return;
       }
     });
-    // find != true ? router.push("/404") :""
+  
   }, [id]);
+
   useEffect(() => {
+    setvaluesToUpdate(getValues);
     if (typeof window !== "undefined") {
       localStorage.setItem("forms", JSON.stringify(values));
     }
   }, [values]);
   const addInput = () => {
     const id = uuid();
-    valuesToUpdate[formIndex].fields.push({
+    let obj = [...valuesToUpdate];
+    obj[formIndex].fields?.push({
       type: "input",
       required: false,
       fieldTitle: "Input",
       dragId: id,
     });
-    dispatch(test(valuesToUpdate));
+    setvaluesToUpdate(obj);
   };
   const addCheckbox = () => {
     const id = uuid();
-    valuesToUpdate[formIndex].fields.push({
+    let obj = [...valuesToUpdate];
+    obj[formIndex].fields.push({
       type: "checkbox",
       required: false,
       fieldTitle: "Checkbox",
       options: [{ title: "Option 1" }, { title: "Option 2" }],
       dragId: id,
     });
-    dispatch(test(valuesToUpdate));
+    setvaluesToUpdate(obj);
   };
   const addRadioButton = () => {
     const id = uuid();
-    valuesToUpdate[formIndex].fields.push({
+    let obj = [...valuesToUpdate];
+    obj[formIndex].fields.push({
       type: "radio",
       required: false,
       fieldTitle: "Radio Button",
       options: [{ title: "Option 1" }, { title: "Option 2" }],
       dragId: id,
     });
-    dispatch(test(valuesToUpdate));
+    setvaluesToUpdate(obj);
   };
 
   const addSelectInput = () => {
     const id = uuid();
-    valuesToUpdate[formIndex].fields.push({
+    let obj = [...valuesToUpdate];
+    obj[formIndex].fields.push({
       type: "select",
       required: false,
       fieldTitle: "Select Input",
       options: [{ title: "Option 1" }, { title: "Option 2" }],
       dragId: id,
     });
-    dispatch(test(valuesToUpdate));
-  };
-  const deleteField = (index: number) => {
-    console.log(index);
-    valuesToUpdate[formIndex].fields.splice(index, 1);
-    dispatch(test(valuesToUpdate));
+    setvaluesToUpdate(obj);
   };
 
-  const handleEditField = (i: number) => {
-    setindexFieldToEdit(i);
-    setmodalOpen(true);
-  };
+
+
   const handleDragEnd = (e: any) => {
+    let obj = [...valuesToUpdate];
     const { active, over } = e;
     if (active.id != over.id) {
       const oldPos = valuesToUpdate[formIndex].fields.findIndex(
@@ -126,157 +133,60 @@ const FormPage = (context: any) => {
       );
 
       let newObj = arrayMove(valuesToUpdate[formIndex].fields, oldPos, newPos);
-      valuesToUpdate[formIndex].fields = newObj;
-      dispatch(test(valuesToUpdate));
+      obj[formIndex].fields = newObj;
+      setvaluesToUpdate(obj);
     }
   };
+  const handleSaveChanges = () => {
+    dispatch(updateForm(valuesToUpdate));
+    toast.success("Changes Saved", {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: false,
+      progress: undefined,
+      theme: "dark",
+    });
+    setmodalOpen(false);
+  };
+  const handleResetForm = () => {
+    setvaluesToUpdate(getValues);
+    toast.info("Form reset done!", {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
+  };
   const renderField = () =>
-    values[formIndex].fields?.map((f, i) => {
+    valuesToUpdate[formIndex].fields?.map((f: field, i: number) => {
       switch (f.type) {
         case "input":
           return (
-            <Draggable id={f.dragId}>
-              <div className="group flex flex-col items-start mb-8 relative hover:shadow-inputboxshadow transition duration-200 ease-in p-3 rounded-xl">
-                <div className=" absolute top-3 right-3 flex space-x-1">
-                  <AiFillDelete
-                    className="z-50"
-                    color="#a50050"
-                    onClick={() => deleteField(i)}
-                  />{" "}
-                  <AiFillEdit
-                    onClick={() => handleEditField(i)}
-                    color="#F48225"
-                    className="z-50"
-                  />
-                </div>
-                <label className="block mb-2 text-sm font-medium  text-gray-300 ">
-                  {f.fieldTitle}
-                  {f.required ? (
-                    <span className="text-rose-500 text-sm ml-px  ">*</span>
-                  ) : (
-                    ""
-                  )}
-                </label>
-                <input
-                  type="text"
-                  className="bg-inputbg border outline-none  z-50 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  border-inputborder placeholder-gray-400 text-white "
-                  required={f.required}
-                />
-              </div>
-            </Draggable>
+             // Generating Inputs Fields
+            <InputField i={i} f={f} formIndex={formIndex} setvaluesToUpdate={setvaluesToUpdate} setindexFieldToEdit={setindexFieldToEdit}   valuesToUpdate={valuesToUpdate} setmodalOpen={setmodalOpen} />
           );
+        
         case "checkbox":
           return (
-            <Draggable id={f.dragId}>
-              <div className="group flex flex-col items-start mb-8 relative hover:shadow-inputboxshadow transition duration-200 ease-in p-3 rounded-xl">
-                <div className=" absolute top-3 right-3 flex space-x-1">
-                  <AiFillDelete
-                    className="cursor-pointer z-50"
-                    color="#a50050"
-                    onClick={() => deleteField(i)}
-                  />{" "}
-                  <AiFillEdit
-                    onClick={() => handleEditField(i)}
-                    className="cursor-pointer z-50"
-                    color="#F48225"
-                  />
-                </div>
-                <label className="block mb-2 text-sm font-medium  text-gray-300  select-none">
-                  {f.fieldTitle}
-                </label>
-
-                {f.options?.map((o, i) => (
-                  <>
-                    <div className="flex ml-2 mb-3">
-                      <input
-                        id={`checkbox${i}`}
-                        type="checkbox"
-                        required={f.required}
-                        value=""
-                        className="w-4 h-4 z-50 text-blue-600  rounded   focus:ring-blue-600 ring-offset-gray-800 focus:ring-2 bg-gray-700 border-gray-600"
-                      />
-                      <label className="ml-2 text-sm font-medium  text-gray-300 select-none">
-                        {o.title}
-                      </label>
-                    </div>
-                  </>
-                ))}
-              </div>
-            </Draggable>
+            // Generating Checkbox Fields
+            <CheckboxField i={i} f={f} formIndex={formIndex} setvaluesToUpdate={setvaluesToUpdate} setindexFieldToEdit={setindexFieldToEdit}   valuesToUpdate={valuesToUpdate} setmodalOpen={setmodalOpen} />
           );
+       
         case "radio":
           return (
-            <Draggable id={f.dragId}>
-              <div className="group flex flex-col items-start mb-8 relative hover:shadow-inputboxshadow transition duration-200 ease-in p-3 rounded-xl">
-                <div className=" absolute top-3 right-3 flex space-x-1">
-                  <AiFillDelete
-                    className="cursor-pointer z-50"
-                    color="#a50050"
-                    onClick={() => deleteField(i)}
-                  />{" "}
-                  <AiFillEdit
-                    onClick={() => handleEditField(i)}
-                    className="cursor-pointer z-50"
-                    color="#F48225"
-                  />
-                </div>
-                <label className="block mb-2 text-sm font-medium  text-gray-300 select-none ">
-                  {f.fieldTitle}
-                </label>
-
-                {f.options?.map((o, i) => {
-                  let uniqueID = uuid();
-                  return (
-                    <>
-                      <div className="flex ml-2 mb-3">
-                        <input
-                          required={f.required}
-                          id={uniqueID}
-                          type="radio"
-                          value=""
-                          name={uniqueID}
-                          className="w-4 h-4 z-50 text-blue-600  focus:ring-blue-600 ring-offset-gray-800 focus:ring-2 bg-gray-700 border-gray-600"
-                        />
-                        <label className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300 select-none">
-                          {o.title}
-                        </label>
-                      </div>
-                    </>
-                  );
-                })}
-              </div>
-            </Draggable>
+             // Generating Radiobutton Fields
+            <Radiobutton i={i} f={f} formIndex={formIndex} setvaluesToUpdate={setvaluesToUpdate} setindexFieldToEdit={setindexFieldToEdit}   valuesToUpdate={valuesToUpdate} setmodalOpen={setmodalOpen} />
           );
         case "select":
           return (
-            <Draggable id={f.dragId}>
-              <div className="group flex flex-col items-start mb-8 relative hover:shadow-inputboxshadow transition duration-200 ease-in p-3 rounded-xl">
-                <div className="absolute top-3 right-3 flex space-x-1">
-                  <AiFillDelete
-                    className="cursor-pointer z-50"
-                    color="#a50050"
-                    onClick={() => deleteField(i)}
-                  />{" "}
-                  <AiFillEdit
-                    onClick={() => handleEditField(i)}
-                    className="cursor-pointer z-50"
-                    color="#F48225"
-                  />
-                </div>
-                <label className="block mb-2 text-sm font-medium  text-gray-300 z-50 select-none">
-                  {f.fieldTitle}
-                </label>
-                <select
-                  required={f.required}
-                  id={`select${i}`}
-                  className=" border z-50 text-sm rounded-lg   block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {f.options?.map((o, i) => (
-                    <option value={o.title}>{o.title}</option>
-                  ))}
-                </select>
-              </div>
-            </Draggable>
+            // Generating Select Input Fields
+            <Selectinput i={i} f={f} formIndex={formIndex} setvaluesToUpdate={setvaluesToUpdate} setindexFieldToEdit={setindexFieldToEdit}   valuesToUpdate={valuesToUpdate} setmodalOpen={setmodalOpen} />
           );
       }
     });
@@ -290,6 +200,7 @@ const FormPage = (context: any) => {
             setmodalOpen={setmodalOpen}
             index={indexFieldToEdit}
             formIndex={formIndex}
+            valuesToUpdate={valuesToUpdate}
           />
 
           <div className="mt-12 ml-20">
@@ -348,24 +259,21 @@ const FormPage = (context: any) => {
               >
                 <SortableContext
                   items={
-                    values[formIndex].fields &&
-                    values[formIndex].fields?.map((v) => v.dragId)
+                    valuesToUpdate[formIndex].fields &&
+                    valuesToUpdate[formIndex].fields?.map(
+                      (v: field) => v.dragId
+                    )
                   }
                   strategy={verticalListSortingStrategy}
                 >
                   <>
-                    <h1 className="font-bold text-2xl  text-center">Form</h1>
+                    <h1 className="font-bold text-2xl capitalize text-center">{valuesToUpdate[formIndex].name} Form</h1>
 
                     <>
-                      {values.length != 0 &&
-                      values[formIndex].fields?.length !== 0 ? (
+                      {valuesToUpdate.length != 0 &&
+                      valuesToUpdate[formIndex].fields?.length !== 0 ? (
                         <form>
-                          {values.length != 0 && renderField()}{" "}
-                          <div className="flex items-center justify-center w-full">
-                            <button className="rounded p-3 bg-btnbg3 w-4/3 text-gray-800 font-bold">
-                              Submit
-                            </button>
-                          </div>
+                          {valuesToUpdate.length != 0 && renderField()}{" "}
                         </form>
                       ) : (
                         <div className="flex items-center justify-center h-2/3">
@@ -375,6 +283,30 @@ const FormPage = (context: any) => {
                           </h1>
                         </div>
                       )}
+                      <div className="flex items-center space-x-8 justify-center w-full">
+                        <button
+                          type="button"
+                          onClick={() => handleResetForm()}
+                          className="rounded p-3 bg-btnbg5 w-36 text-gray-800 font-bold"
+                        >
+                          Reset
+                        </button>
+                        <button
+                          type="button"
+                          disabled={values == valuesToUpdate}
+                          onClick={() => handleSaveChanges()}
+                          className="rounded p-3 bg-btnbg3 w-36 text-gray-800 font-bold"
+                        >
+                          Save
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => router.push(`/forms/validate/${id}`)}
+                          className="rounded p-3 bg-btnbg4 w-36 text-gray-800 font-bold"
+                        >
+                          Validate
+                        </button>
+                      </div>
                     </>
                   </>
                 </SortableContext>
