@@ -31,6 +31,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           <a
             href="https://mahdiferiani.netlify.app/"
             target="_blank"
+            rel="noreferrer"
             className="transition-all duration-200 scale-100 ease-in transform grou-hover:scale-105 group-hover:font-bold cursor-pointer "
           >
             Mahdi

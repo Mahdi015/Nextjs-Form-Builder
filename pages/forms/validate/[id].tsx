@@ -129,7 +129,7 @@ function ValidateForm() {
                 <option value="">Select Option</option>
 
                 {f.options?.map((o, i) => (
-                  <option value={o.title}>{o.title}</option>
+                  <option key={i} value={o.title}>{o.title}</option>
                 ))}
               </select>
             </div>

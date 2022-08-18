@@ -93,7 +93,7 @@ const Home: NextPage = () => {
             <>
               {" "}
               <Image src={noformimg} width="220px" height="200px" />
-              <h1 className="font-medium">YOU DON'T HAVE ANY FORM YET!</h1>
+              <h1 className="font-medium">YOU DON T HAVE ANY FORM YET!</h1>
               <p className="mt-2 mb-12 font-normal text-slate-400	text-sm">
                 Your form will appear here
               </p>

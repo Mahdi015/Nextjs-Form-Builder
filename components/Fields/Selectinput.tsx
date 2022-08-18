@@ -58,7 +58,7 @@ function Selectinput({
           className=" border z-50 text-sm rounded-lg   block w-full p-2.5 bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500"
         >
           {f.options?.map((o, i) => (
-            <option value={o.title}>{o.title}</option>
+            <option key={i} value={o.title}>{o.title}</option>
           ))}
         </select>
       </div>
